@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jeans Shop</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+
+    header p {
+      margin-top: 0.5rem;
+      font-size: 1.2rem;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .product {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+    }
+
+    .product:hover {
+      transform: translateY(-5px);
+    }
+
+    .product img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+    }
+
+    .product-details {
+      padding: 1.2rem;
+      text-align: center;
+    }
+
+    .product-details h3 {
+      margin: 0.5rem 0;
+      font-size: 1.3rem;
+    }
+
+    .product-details p {
+      margin: 0.3rem 0;
+      font-size: 1rem;
+    }
+
+    .add-to-cart {
+      background-color: #ffc439;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      font-weight: bold;
+      color: black;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .add-to-cart:hover {
+      background-color: #e0ac00;
+    }
+
+    .cart {
+      position: fixed;
+      top: 10%;
+      right: 20px;
+      background: white;
+      padding: 1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      width: 300px;
+      display: none;
+    }
+
+    #cart-items {
+      list-style: none;
+      padding: 0;
+    }
+
+    #cart-items li {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #cart-total {
+      font-weight: bold;
+    }
+
+    #checkout-btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 0.8rem;
+      width: 100%;
+      border: none;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Jeans Shoppen</h1>
+    <p>Find dine nye favoritjeans – hurtigt og nemt</p>
+  </header>
+
+  <section class="products">
+    <!-- Jeans 1 -->
+    <div class="product" data-id="1" data-name="Slim Fit Jeans" data-price="329">
+      <img src="https://images.unsplash.com/photo-1593032465174-8c728c9b95cf?auto=format&fit=crop&w=400&q=80" alt="Slim Fit Jeans">
+      <div class="product-details">
+        <h3>Slim Fit Jeans</h3>
+        <p>DKK 329</p>
+        <button class="add-to-cart">Læg i kurv</button>
+      </div>
+    </div>
+
+    <!-- Jeans 2 -->
+    <div class="product" data-id="2" data-name="Regular Fit Jeans" data-price="299">
+      <img src="https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=400&q=80" alt="Regular Fit Jeans">
+      <div class="product-details">
+        <h3>Regular Fit Jeans</h3>
+        <p>DKK 299</p>
+        <button class="add-to-cart">Læg i kurv</button>
+      </div>
+    </div>
+
+    <!-- Jeans 3 -->
+    <div class="product" data-id="3" data-name="Lys Denim Jeans" data-price="349">
+      <img src="https://images.unsplash.com/photo-1602810311410-9cf95f9c2786?auto=format&fit=crop&w=400&q=80" alt="Lys Denim Jeans">
+      <div class="product-details">
+        <h3>Lys Denim Jeans</h3>
+        <p>DKK 349</p>
+        <button class="add-to-cart">Læg i kurv</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="cart">
+    <h2>Din Kurv</h2>
+    <ul id="cart-items"></ul>
+    <p id="cart-total">Total: DKK 0</p>
+    <button id="checkout-btn">Gå til betaling</button>
+  </div>
+
+  <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&components=buttons"></script>
+  <script>
+    let cart = [];
+    const cartItems = document.getElementById("cart-items");
+    const cartTotal = document.getElementById("cart-total");
+    const cartBtn = document.querySelector(".cart");
+    const checkoutBtn = document.getElementById("checkout-btn");
+
+    // Tilføj til kurv funktion
+    document.querySelectorAll(".add-to-cart").forEach(button => {
+      button.addEventListener("click", function() {
+        const productElement = this.parentElement.parentElement;
+        const id = productElement.getAttribute("data-id");
+        const name = productElement.getAttribute("data-name");
+        const price = parseFloat(productElement.getAttribute("data-price"));
+
+        addToCart(id, name, price);
+      });
+    });
+
+    // Tilføj produkt til kurv
+    function addToCart(id, name, price) {
+      const existingProduct = cart.find(item => item.id === id);
+
+      if (existingProduct) {
+        existingProduct.quantity += 1;
+      } else {
+        cart.push({ id, name, price, quantity: 1 });
+      }
+
+      updateCart();
+    }
+
+    // Opdater kurven
+    function updateCart() {
+      cartItems.innerHTML = "";
+      let total = 0;
+
+      cart.forEach(item => {
+        total += item.price * item.quantity;
+
+        const li = document.createElement("li");
+        li.innerHTML = `${item.name} x${item.quantity} - DKK ${item.price * item.quantity}`;
+        cartItems.appendChild(li);
+      });
+
+      cartTotal.textContent = `Total: DKK ${total.toFixed(2)}`;
+      cartBtn.style.display = cart.length > 0 ? "block" : "none";
+    }
+
+    // Checkout knap funktionalitet
+    checkoutBtn.addEventListener("click", function() {
+      const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2);
+      if (totalAmount > 0) {
+        // Skjul kurv og vis PayPal knappen
+        document.querySelector(".cart").innerHTML = `
+          <h2>Betal med PayPal</h2>
+          <div id="paypal-button-container"></div>
+        `;
+        
+        // PayPal knap integration
+        paypal.Buttons({
+          createOrder: function(data, actions) {
+            return actions.order.create({
+              purchase_units: [{
+                amount: {
+                  value: totalAmount
+                }
+              }]
+            });
+          },
+          onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+              alert("Tak for din bestilling, " + details.payer.name.given_name);
+              cart = []; // Tøm kurven
+              updateCart(); // Opdater kurven
+            });
+          }
+        }).render('#paypal-button-container'); // Renderer PayPal knappen
+      } else {
+        alert("Kurven er tom!");
+      }
+    });
+  </script>
+</body>
+</html>
